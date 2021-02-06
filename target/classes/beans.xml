@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans>
+
+    <!-- 配置接口接口与实现类全名-->
+    <bean id="userService" class="com.itheima.service.impl.UserServiceImpl"></bean>
+
+    <!-- AddressService 地址业务类-->
+    <bean id="addressService" class="com.itheima.service.impl.AddressServiceImpl"></bean>
+
+    <!--  配置categoryService接口与实现类全名  -->
+    <bean id="categoryService" class="com.itheima.service.impl.CategoryServiceImpl">
+
+    </bean>
+
+    <!--RouteService接口实现类配置-->
+    <bean id="routeService" class="com.itheima.service.impl.RouteServiceImpl"></bean>
+
+    <!--配置orderService接口与实现类全名-->
+    <bean id="orderService" class="com.itheima.service.impl.OrderServiceImpl"></bean>
+
+
+</beans>

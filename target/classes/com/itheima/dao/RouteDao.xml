@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.dao.RouteDao">
+
+    <!--收取相同where条件-->
+    <sql id="conditionSql">
+        <where>
+            <if test="cid!=null and cid!=''">
+                cid=#{cid}
+            </if>
+            <if test="rname!=null and rname!=''">
+                rname like concat('%',#{rname},'%')
+            </if>
+        </where>
+
+    </sql>
+
+    <!--
+    //查询总条数
+  Integer countByCid(@Param("cid") Integer cid,
+                     @Param("rname") String rname);
+    -->
+    <select id="countByCid" resultType="Integer">
+        select COUNT(*) from tab_route
+        <include refid="conditionSql"></include>
+    </select>
+
+    <!-- //查询当前页数据列表
+    List<Route> findByPage(@Param("cid") Integer cid,
+                           @Param("start")Integer start ,
+                           @Param("length")Integer length);
+                           -->
+    <select id="findByPage" resultType="Route">
+        select * from tab_route where cid=#{cid} limit #{start},#{length}
+    </select>
+
+    <!--  xml配置 复制进来的
+    //查询指定线路的线路关联查询类别、商家、轮播图片列表数据【xml实现】
+    Route findByRid2(int rid);
+    -->
+    <resultMap id="findByRid2Map" type="Route">
+        <!--关联字段手动映射-->
+        <id property="rid" column="rid"></id>
+        <result property="cid" column="cid"></result>
+        <result property="sid" column="sid"></result>
+        <!--关联类别数据查询，封装属性：category， 关联关系：1对1-->
+        <association property="category" column="cid" select="com.itheima.dao.CategoryDao.findByCid"></association>
+        <!--关联商家数据查询，封装属性：seller， 关联关系：1对1-->
+        <association property="seller" column="sid" select="com.itheima.dao.SellerDao.findBySid"></association>
+        <!--关联轮播图列表数据查询，封装属性：routeImgList， 关联关系：1对多-->
+        <collection property="routeImgList" column="rid" select="com.itheima.dao.RouteImgDao.findAllByRid"></collection>
+    </resultMap>
+    <select id="findByRid2" resultMap="findByRid2Map">
+    select * from tab_route where rid=#{rid}
+</select>
+
+    <!--    方式2：执行表连接1条sql语句封装xml实现
+    //表连接的1条sql语句的xml实现封装4个表数据
+    Route findByRid3(Integer rid);
+    实现步骤：
+        1.单独映射tab_route表数据
+        2.单独映射tab_category表数据
+        3.单独映射tab_seller表数据
+        4.单独映射tab_route_img表数据
+        5.多表封装映射
+        6.执行查询命令
+    表连接xml的映射，无论类属性名与数据库查询的字段名是否一致，都必须手动映射
+    -->
+    <!--Category实体类映射-->
+    <resultMap id="categoryMap" type="Category">
+        <id property="cid" column="cid"></id>
+        <result property="cname" column="cname"></result>
+    </resultMap>
+    <!--Seller实体类映射-->
+    <resultMap id="sellerMap" type="Seller">
+        <id property="sid" column="sid"></id>
+        <result property="sname" column="sname"></result>
+        <result property="consphone" column="consphone"></result>
+        <result property="address" column="address"></result>
+    </resultMap>
+    <!--RouteImg实体类映射-->
+    <resultMap id="routeImgMap" type="RouteImg">
+        <id property="rgid" column="rgid"></id>
+        <result property="rid" column="rid"></result>
+        <result property="bigPic" column="bigPic"></result>
+        <result property="smallPic" column="smallPic"></result>
+    </resultMap>
+    <!--Route实体类映射-->
+    <resultMap id="routeMap" type="Route">
+        <id property="rid" column="rid"></id>
+        <result property="rname" column="rname"></result>
+        <result property="price" column="price"></result>
+        <result property="routeIntroduce" column="routeIntroduce"></result>
+        <result property="rflag" column="rflag"></result>
+        <result property="rdate" column="rdate"></result>
+        <result property="isThemeTour" column="isThemeTour"></result>
+        <result property="num" column="num"></result>
+        <result property="cid" column="cid"></result>
+        <result property="rimage" column="rimage"></result>
+        <result property="sid" column="sid"></result>
+        <result property="sourceId" column="sourceId"></result>
+    </resultMap>
+    <!--将上面4个表封装到Route对象中返回-->
+    <resultMap id="routeCategorySellerRouteImgMap" type="Route" extends="routeMap">
+        <association property="category" resultMap="categoryMap"></association>
+        <association property="seller" resultMap="sellerMap"></association>
+        <collection property="routeImgList" resultMap="routeImgMap"></collection>
+    </resultMap>
+    <!--配置查询执行命令-->
+    <select id="findByRid3" resultMap="routeCategorySellerRouteImgMap">
+    select *
+    from tab_route r
+    left join tab_category c on r.cid = c.cid
+    left join tab_seller s on r.sid = s.sid
+    left join tab_route_img ri on r.rid = ri.rid
+    where r.rid = #{rid}
+</select>
+
+</mapper>
