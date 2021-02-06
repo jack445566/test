@@ -6,6 +6,7 @@ import java.lang.reflect.Proxy;
 
 public class DaoFactory {
 
+
     public static <T> T getBean(Class<T> daoInterface){
         return (T)Proxy.newProxyInstance(
                 daoInterface.getClassLoader(),
